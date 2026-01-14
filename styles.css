@@ -71,3 +71,48 @@ hr{border:0;border-top:1px solid var(--edge);margin:12px 0}
   padding:8px;
   text-align:center;
 }
+/* === Vista semanal (móvil) === */
+.weekWrap{display:none;margin-top:12px}
+.weekTop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.weekLabel{flex:1;text-align:center;font-weight:700;color:var(--txt)}
+.weekGrid{
+  display:grid;
+  grid-template-columns: 86px repeat(7, 1fr);
+  gap:6px;
+}
+.weekHead{
+  text-align:center;
+  font-size:12px;
+  color:var(--muted);
+  padding:6px 0;
+}
+.weekName{
+  display:flex;align-items:center;
+  font-weight:650;
+  font-size:12px;
+  color:rgba(255,255,255,.82);
+  padding:8px 6px;
+  border:1px solid var(--edge);
+  border-radius:12px;
+  background:rgba(255,255,255,.02);
+}
+.weekCell{
+  border:1px solid var(--edge);
+  border-radius:12px;
+  text-align:center;
+  padding:10px 0;
+  font-weight:900;
+  font-size:16px;
+  background:rgba(255,255,255,.02);
+  user-select:none;
+}
+.weekCell.m{border-color:rgba(170,200,255,.65); color:rgba(210,230,255,.95)}
+.weekCell.t{border-color:rgba(255,190,120,.65); color:rgba(255,230,200,.95)}
+.weekCell.v{border-color:rgba(120,220,180,.65); color:rgba(215,255,240,.95)}
+.weekCell.off{opacity:.28}
+
+@media (max-width: 820px){
+  /* En móvil ocultamos la mensual y mostramos la semanal */
+  .calendar{display:none !important;}
+  .weekWrap{display:block;}
+}
