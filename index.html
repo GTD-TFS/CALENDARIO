@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calendario de trabajo (local)</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Calendario</div>
+
+    <div class="actions">
+      <button id="btnPrev">◀</button>
+      <div id="monthLabel" class="month"></div>
+      <button id="btnNext">▶</button>
+
+      <select id="userSelect" title="Usuario">
+  <option value="u1">Javier</option>
+  <option value="u2">Marta</option>
+  <option value="u3">Sergio</option>
+  <option value="u4">Lucía</option>
+  <option value="u5">Pablo</option>
+  <option value="u6">Noelia</option>
+</select>
+
+      <label class="toggle">
+        <input id="adminToggle" type="checkbox">
+        <span>Admin</span>
+      </label>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <div class="row">
+        <div class="muted">Equipo:</div>
+        <select id="teamSelect">
+          <option value="A">A</option>
+        </select>
+        <div class="muted">Usuario actual:</div>
+        <div id="userLabel">—</div>
+      </div>
+
+      <div id="calendar" class="calendar"></div>
+
+      <div class="legend">
+        <span class="pill">M = Mañana</span>
+        <span class="pill">T = Tarde</span>
+        <span class="pill vac">Vacaciones</span>
+        <span class="pill sel">Seleccionado</span>
+      </div>
+
+      <hr>
+
+      <div class="row">
+        <button id="btnSeed">Cargar ejemplo</button>
+        <button id="btnReset" class="danger">Reset local</button>
+        <button id="btnExport">Exportar JSON</button>
+        <button id="btnImport">Importar JSON</button>
+        <input id="fileImport" type="file" accept="application/json" class="hide">
+      </div>
+      <p class="muted small">
+        Export/Import te sirve para simular “compartir” datos sin Firebase.
+      </p>
+    </section>
+
+    <section class="card">
+      <h3>Solicitar vacaciones</h3>
+      <p class="muted">Selecciona días en el calendario y envía la solicitud.</p>
+
+      <div id="selDates" class="selBox">—</div>
+
+      <div class="row">
+        <button id="btnSendRequest" disabled>Enviar solicitud</button>
+        <button id="btnClearSel" disabled>Limpiar</button>
+      </div>
+
+      <hr>
+
+      <h3>Solicitudes</h3>
+      <div id="adminInfo" class="muted">Activa “Admin” para aprobar/denegar.</div>
+      <div id="requests"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js");
+    }
+  </script>
+</body>
+</html>
