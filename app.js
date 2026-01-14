@@ -1,3 +1,12 @@
+/* app.js — versión completa con vista semanal (móvil) + mensual (desktop)
+   Reglas:
+   - Semana sí / semana no
+   - La semana empieza MARTES (mar..lun)
+   - Esta semana (según reloj del dispositivo) es DESCANSO
+   - En días de trabajo: 6 personas con M/T/V (colores via CSS)
+   - Vacaciones por solicitudes + aprobación admin (localStorage)
+*/
+
 const $ = (s)=>document.querySelector(s);
 
 /* 6 miembros fijos del equipo */
@@ -21,26 +30,29 @@ let state = {
   isAdmin: false,
   sel: new Set(),
   db: {
-    vacations: {}, // vacations[team][YYYY][YYYY-MM-DD] = [uid...]
-    requests: []   // solicitudes
+    // vacations[team][YYYY][YYYY-MM-DD] = [uid...]
+    vacations: {},
+    // requests: [{id,team,uid,dates,status,createdAt,decidedAt,decidedBy}]
+    requests: []
   }
 };
 
+/* ===== Helpers fecha ===== */
 function pad2(n){ return String(n).padStart(2,"0"); }
 function ymd(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
 function ym(d){ return `${d.getFullYear()}-${pad2(d.getMonth()+1)}`; }
 function monthLabel(d){ return d.toLocaleDateString("es-ES",{month:"long",year:"numeric"}); }
 function daysInMonth(d){ return new Date(d.getFullYear(), d.getMonth()+1, 0).getDate(); }
 
-/* Semana “empieza” el MARTES: semana = martes..lunes */
+/* ===== Semana empieza en MARTES (mar..lun) ===== */
 function startOfTueWeek(date){
   const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   d.setHours(0,0,0,0);
   const js = d.getDay(); // 0 dom..6 sáb
   const iso = js === 0 ? 7 : js; // 1 lun..7 dom
-  const offsetToTueStart = iso >= 2 ? (iso - 2) : 6; // mar=2 -> 0, lun=1 -> 6
+  const offsetToTueStart = iso >= 2 ? (iso - 2) : 6; // mar=2 ->0, lun=1 ->6
   d.setDate(d.getDate() - offsetToTueStart);
-  return d;
+  return d; // martes
 }
 function weeksBetween(aTueStart, bTueStart){
   const ms = 24*60*60*1000;
@@ -48,22 +60,22 @@ function weeksBetween(aTueStart, bTueStart){
   return Math.trunc(diffDays / 7);
 }
 
-/* Regla del usuario:
-   - Esta semana (la actual, según reloj del PC) es descanso.
-   - Alterna semana trabajo / semana descanso.
+/* Regla:
+   - Esta semana (martes->lunes actual) es DESCANSO
+   - Alterna: descanso, trabajo, descanso, trabajo...
 */
 function isWorkWeek(date){
-  const ref = startOfTueWeek(new Date());     // semana actual (mar..lun)
+  const ref = startOfTueWeek(new Date()); // semana actual
   const w0 = startOfTueWeek(date);
-  const k = weeksBetween(ref, w0);            // 0 = esta semana
-  // k=0 descanso, k=1 trabajo, k=2 descanso...
-  return (Math.abs(k) % 2) === 1;
+  const k = weeksBetween(ref, w0); // 0 = esta semana
+  return (Math.abs(k) % 2) === 1; // 0 descanso, 1 trabajo
 }
 
-/* Vacaciones */
-function ensure(obj, k, def){ if (!obj[k]) obj[k] = def; return obj[k]; }
-function yearOf(date){ return String(date.getFullYear()); }
-
+/* ===== Vacaciones ===== */
+function ensure(obj, k, def){
+  if (!obj[k]) obj[k] = def;
+  return obj[k];
+}
 function getVacMap(team, year){
   const t = ensure(state.db.vacations, team, {});
   return ensure(t, String(year), {});
@@ -83,23 +95,21 @@ function removeVacation(team, dateStr, uid){
   save();
 }
 
-/* Turnos M/T:
-   - En días de trabajo: 3 en M y 3 en T.
-   - Rotación diaria simple: el “corte” se desplaza con el día.
+/* ===== Turnos M/T (rotación simple) =====
+   - Días de trabajo: 3 en M, 3 en T
+   - Rotación diaria: se desplaza con el día dentro de la semana mar..lun
 */
 function shiftFor(uid, date){
   const idx = TEAM.indexOf(uid);
   if (idx < 0) return "M";
   const weekStart = startOfTueWeek(date);
   const dayOffset = Math.round((date - weekStart) / (24*60*60*1000)); // 0..6
-  // corte: 3 + (dayOffset mod 2) => alterna 3/3 pero rota quién cae en M/T
   const cut = 3;
-  // rotación: suma dayOffset al índice
   const rot = (idx + dayOffset) % 6;
   return rot < cut ? "M" : "T";
 }
 
-/* Storage */
+/* ===== Storage ===== */
 function load(){
   const raw = localStorage.getItem(KEY);
   if (!raw) return;
@@ -112,7 +122,7 @@ function save(){
   localStorage.setItem(KEY, JSON.stringify({ db: state.db }));
 }
 
-/* Requests */
+/* ===== Requests ===== */
 function createRequest(team, uid, dates){
   const id = "r_" + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
   state.db.requests.unshift({
@@ -135,124 +145,202 @@ function decideRequest(id, status){
   return r;
 }
 
-/* UI handlers */
-$("#teamSelect").addEventListener("change", ()=>{
-  state.team = $("#teamSelect").value;
-  state.sel.clear();
-  renderAll();
-});
-$("#userSelect").addEventListener("change", ()=>{
-  state.userId = $("#userSelect").value;
-  state.sel.clear();
-  renderAll();
-});
-$("#adminToggle").addEventListener("change", ()=>{
-  state.isAdmin = $("#adminToggle").checked;
-  renderRequests();
-});
+/* ===== UI handlers ===== */
+const elTeam = $("#teamSelect");
+const elUser = $("#userSelect");
+const elAdmin = $("#adminToggle");
 
-$("#btnPrev").addEventListener("click", ()=>{
-  state.view = new Date(state.view.getFullYear(), state.view.getMonth()-1, 1);
-  state.sel.clear();
-  renderAll();
-});
-$("#btnNext").addEventListener("click", ()=>{
-  state.view = new Date(state.view.getFullYear(), state.view.getMonth()+1, 1);
-  state.sel.clear();
-  renderAll();
-});
-
-$("#btnClearSel").addEventListener("click", ()=>{
-  state.sel.clear();
-  renderSelected();
-  renderCalendar();
-});
-
-$("#btnSendRequest").addEventListener("click", ()=>{
-  const dates = [...state.sel];
-  if (!dates.length) return;
-
-  // bloqueo: no pedir un día en el que YA estás de vacaciones (aprobadas)
-  const vac = getVacMap(state.team, new Date().getFullYear());
-  for (const d of dates){
-    if ((vac[d] || []).includes(state.userId)){
-      alert(`Ya estás de vacaciones el ${d}.`);
-      return;
-    }
-  }
-
-  createRequest(state.team, state.userId, dates);
-  state.sel.clear();
-  renderSelected();
-  renderCalendar();
-  renderRequests();
-});
-
-/* Botones utilidades */
-$("#btnSeed").addEventListener("click", ()=>{
-  seedExample();
-  renderAll();
-});
-$("#btnReset").addEventListener("click", ()=>{
-  localStorage.removeItem(KEY);
-  state.db = { vacations:{}, requests:[] };
-  renderAll();
-});
-$("#btnExport").addEventListener("click", ()=>{
-  const blob = new Blob([JSON.stringify({db:state.db}, null, 2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `calendario_local_${Date.now()}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-});
-$("#btnImport").addEventListener("click", ()=> $("#fileImport").click());
-$("#fileImport").addEventListener("change", async (e)=>{
-  const f = e.target.files?.[0];
-  if (!f) return;
-  try{
-    const txt = await f.text();
-    const parsed = JSON.parse(txt);
-    if (!parsed?.db) throw new Error("Formato inválido");
-    state.db = parsed.db;
-    save();
+if (elTeam){
+  elTeam.addEventListener("change", ()=>{
+    state.team = elTeam.value;
+    state.sel.clear();
     renderAll();
-  }catch(err){
-    alert("No se pudo importar: " + err.message);
-  }finally{
-    e.target.value = "";
-  }
-});
+  });
+}
 
+if (elUser){
+  elUser.addEventListener("change", ()=>{
+    state.userId = elUser.value;
+    state.sel.clear();
+    renderAll();
+  });
+}
+
+if (elAdmin){
+  elAdmin.addEventListener("change", ()=>{
+    state.isAdmin = elAdmin.checked;
+    renderRequests();
+  });
+}
+
+const btnPrev = $("#btnPrev");
+const btnNext = $("#btnNext");
+
+if (btnPrev){
+  btnPrev.addEventListener("click", ()=>{
+    state.view = new Date(state.view.getFullYear(), state.view.getMonth()-1, 1);
+    state.sel.clear();
+    renderAll();
+  });
+}
+if (btnNext){
+  btnNext.addEventListener("click", ()=>{
+    state.view = new Date(state.view.getFullYear(), state.view.getMonth()+1, 1);
+    state.sel.clear();
+    renderAll();
+  });
+}
+
+/* Navegación semanal (móvil) */
+const btnWeekPrev = $("#btnWeekPrev");
+const btnWeekNext = $("#btnWeekNext");
+
+if (btnWeekPrev){
+  btnWeekPrev.addEventListener("click", ()=>{
+    const ws = startOfTueWeek(state.view);
+    ws.setDate(ws.getDate() - 7);
+    state.view = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate());
+    state.sel.clear();
+    renderAll();
+  });
+}
+if (btnWeekNext){
+  btnWeekNext.addEventListener("click", ()=>{
+    const ws = startOfTueWeek(state.view);
+    ws.setDate(ws.getDate() + 7);
+    state.view = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate());
+    state.sel.clear();
+    renderAll();
+  });
+}
+
+const btnClearSel = $("#btnClearSel");
+if (btnClearSel){
+  btnClearSel.addEventListener("click", ()=>{
+    state.sel.clear();
+    renderSelected();
+    renderCalendar();
+    renderWeek();
+  });
+}
+
+const btnSend = $("#btnSendRequest");
+if (btnSend){
+  btnSend.addEventListener("click", ()=>{
+    const dates = [...state.sel];
+    if (!dates.length) return;
+
+    // bloquear: no pedir un día en el que YA estás de vacaciones (aprobadas)
+    const vac = getVacMap(state.team, new Date().getFullYear());
+    for (const d of dates){
+      if ((vac[d] || []).includes(state.userId)){
+        alert(`Ya estás de vacaciones el ${d}.`);
+        return;
+      }
+    }
+
+    createRequest(state.team, state.userId, dates);
+    state.sel.clear();
+    renderSelected();
+    renderCalendar();
+    renderWeek();
+    renderRequests();
+  });
+}
+
+/* Utilidades */
+const btnSeed = $("#btnSeed");
+const btnReset = $("#btnReset");
+const btnExport = $("#btnExport");
+const btnImport = $("#btnImport");
+const fileImport = $("#fileImport");
+
+if (btnSeed){
+  btnSeed.addEventListener("click", ()=>{
+    seedExample();
+    renderAll();
+  });
+}
+if (btnReset){
+  btnReset.addEventListener("click", ()=>{
+    localStorage.removeItem(KEY);
+    state.db = { vacations:{}, requests:[] };
+    renderAll();
+  });
+}
+if (btnExport){
+  btnExport.addEventListener("click", ()=>{
+    const blob = new Blob([JSON.stringify({db:state.db}, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `calendario_local_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+if (btnImport && fileImport){
+  btnImport.addEventListener("click", ()=> fileImport.click());
+  fileImport.addEventListener("change", async (e)=>{
+    const f = e.target.files?.[0];
+    if (!f) return;
+    try{
+      const txt = await f.text();
+      const parsed = JSON.parse(txt);
+      if (!parsed?.db) throw new Error("Formato inválido");
+      state.db = parsed.db;
+      save();
+      renderAll();
+    }catch(err){
+      alert("No se pudo importar: " + err.message);
+    }finally{
+      e.target.value = "";
+    }
+  });
+}
+
+/* ===== Render ===== */
 function renderAll(){
-  $("#monthLabel").textContent = monthLabel(state.view);
-  $("#teamSelect").value = state.team;
-  $("#userSelect").value = state.userId;
-  $("#adminToggle").checked = state.isAdmin;
-  $("#userLabel").textContent = USERS[state.userId].name;
+  const ml = $("#monthLabel");
+  if (ml) ml.textContent = monthLabel(state.view);
+
+  if (elTeam) elTeam.value = state.team;
+  if (elUser) elUser.value = state.userId;
+  if (elAdmin) elAdmin.checked = state.isAdmin;
+
+  const ul = $("#userLabel");
+  if (ul) ul.textContent = USERS[state.userId]?.name || state.userId;
 
   renderSelected();
-  renderCalendar();
+  renderCalendar(); // desktop
+  renderWeek();     // móvil
   renderRequests();
 }
 
 function renderSelected(){
   const arr = [...state.sel].sort();
-  $("#selDates").textContent = arr.length ? arr.join(", ") : "—";
-  $("#btnSendRequest").disabled = !arr.length;
-  $("#btnClearSel").disabled = !arr.length;
+  const out = $("#selDates");
+  if (out) out.textContent = arr.length ? arr.join(", ") : "—";
+
+  if (btnSend) btnSend.disabled = !arr.length;
+  if (btnClearSel) btnClearSel.disabled = !arr.length;
 }
 
+/* === Mensual (desktop) ===
+   Mantiene tu idea original: cada día de trabajo muestra los 6 miembros con M/T/V.
+   En móvil se oculta por CSS, pero se renderiza igual (no rompe nada).
+*/
 function renderCalendar(){
   const cal = $("#calendar");
+  if (!cal) return;
   cal.innerHTML = "";
 
   const d0 = new Date(state.view.getFullYear(), state.view.getMonth(), 1);
-  // blanks Mon..Sun; para alinear con lunes 0, usamos getDay ES manual
+  // blanks (lunes=0)
   const js = d0.getDay(); // 0 dom
   const iso = js === 0 ? 7 : js; // 1..7
-  const blanks = iso - 1; // lunes=1 =>0
+  const blanks = iso - 1;
+
   for (let i=0;i<blanks;i++){
     const div = document.createElement("div");
     div.className = "day off";
@@ -260,8 +348,8 @@ function renderCalendar(){
   }
 
   const vacYear = getVacMap(state.team, state.view.getFullYear());
-
   const n = daysInMonth(state.view);
+
   for (let day=1; day<=n; day++){
     const date = new Date(state.view.getFullYear(), state.view.getMonth(), day);
     const key = ymd(date);
@@ -278,24 +366,9 @@ function renderCalendar(){
       lbl.textContent = "DESCANSO";
       div.appendChild(lbl);
 
-      // Aun así permitimos selección para solicitar vacaciones si quieres,
-      // pero normalmente no tendría sentido. Si quieres bloquearlo, lo quito.
-      div.addEventListener("click", ()=>{
-        if (state.sel.has(key)) state.sel.delete(key);
-        else state.sel.add(key);
-        renderSelected();
-        renderCalendar();
-      });
-
-      if (state.sel.has(key)){
-        const b = document.createElement("div");
-        b.className = "badges";
-        const s = document.createElement("span");
-        s.className = "badge sel";
-        s.textContent = "✓";
-        b.appendChild(s);
-        div.appendChild(b);
-      }
+      // Selección (solo para el usuario actual) — en descanso la bloqueamos por defecto
+      // Si quieres permitir solicitar también en descanso, quita este return.
+      div.addEventListener("click", ()=>{ /* bloqueado */ });
 
       cal.appendChild(div);
       continue;
@@ -320,7 +393,7 @@ function renderCalendar(){
         tag.className = "tag v";
         tag.textContent = "V";
       } else {
-        const sh = shiftFor(uid, date); // "M"|"T"
+        const sh = shiftFor(uid, date);
         tag.className = "tag " + (sh === "M" ? "m" : "t");
         tag.textContent = sh;
       }
@@ -332,12 +405,13 @@ function renderCalendar(){
 
     div.appendChild(list);
 
-    // selección vacaciones (para el usuario actual)
+    // Selección de vacaciones: clic en el día (para el usuario actual)
     div.addEventListener("click", ()=>{
       if (state.sel.has(key)) state.sel.delete(key);
       else state.sel.add(key);
       renderSelected();
       renderCalendar();
+      renderWeek();
     });
 
     if (state.sel.has(key)){
@@ -354,15 +428,110 @@ function renderCalendar(){
   }
 }
 
+/* === Semanal (móvil): filas=personas, columnas=Mar..Lun ===
+   - Se selecciona tocando SOLO en tu fila (uid==userId) y solo si es semana de trabajo.
+*/
+function renderWeek(){
+  const grid = $("#weekGrid");
+  const lab = $("#weekLabel");
+  if (!grid || !lab) return;
+
+  const ws = startOfTueWeek(state.view); // martes
+  const days = [];
+  for (let i=0;i<7;i++){
+    const d = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate());
+    d.setDate(d.getDate()+i);
+    days.push(d);
+  }
+
+  const fmt = (d)=> `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}`;
+  const work = isWorkWeek(days[0]);
+  lab.textContent = `${fmt(days[0])}–${fmt(days[6])} · ${work ? "TRABAJO" : "DESCANSO"}`;
+
+  const vacYear = getVacMap(state.team, days[0].getFullYear());
+
+  grid.innerHTML = "";
+
+  // Cabecera
+  const blank = document.createElement("div");
+  blank.className = "weekHead";
+  blank.textContent = "";
+  grid.appendChild(blank);
+
+  const dow = ["Mar","Mié","Jue","Vie","Sáb","Dom","Lun"];
+  for (let i=0;i<7;i++){
+    const h = document.createElement("div");
+    h.className = "weekHead";
+    h.textContent = `${dow[i]} ${days[i].getDate()}`;
+    grid.appendChild(h);
+  }
+
+  // Filas por persona
+  for (const uid of TEAM){
+    const nm = document.createElement("div");
+    nm.className = "weekName";
+    nm.textContent = USERS[uid].name;
+    grid.appendChild(nm);
+
+    for (let i=0;i<7;i++){
+      const d = days[i];
+      const key = ymd(d);
+
+      let val = "—";
+      let cls = "weekCell off";
+
+      if (isWorkWeek(d)){
+        const isVac = (vacYear[key] || []).includes(uid);
+        if (isVac){
+          val = "V";
+          cls = "weekCell v";
+        } else {
+          const sh = shiftFor(uid, d);
+          val = sh;
+          cls = "weekCell " + (sh === "M" ? "m" : "t");
+        }
+      }
+
+      const cell = document.createElement("div");
+      cell.className = cls;
+      cell.textContent = val;
+
+      cell.addEventListener("click", ()=>{
+        // Solo seleccionar en tu fila
+        if (uid !== state.userId) return;
+        // Bloquear selección si no es semana de trabajo
+        if (!isWorkWeek(d)) return;
+
+        if (state.sel.has(key)) state.sel.delete(key);
+        else state.sel.add(key);
+
+        renderSelected();
+        renderWeek();
+
+        // Si está visible el mensual (desktop), refrescarlo también
+        if (window.matchMedia("(min-width: 821px)").matches) renderCalendar();
+      });
+
+      grid.appendChild(cell);
+    }
+  }
+}
+
+/* ===== Solicitudes ===== */
 function renderRequests(){
   const wrap = $("#requests");
+  const info = $("#adminInfo");
+  if (!wrap) return;
+
   wrap.innerHTML = "";
 
   const teamReq = state.db.requests.filter(r=>r.team===state.team);
 
-  $("#adminInfo").textContent = state.isAdmin
-    ? "Modo admin activo: puedes aprobar/denegar."
-    : "Activa “Admin” para aprobar/denegar.";
+  if (info){
+    info.textContent = state.isAdmin
+      ? "Modo admin activo: puedes aprobar/denegar."
+      : "Activa “Admin” para aprobar/denegar.";
+  }
 
   for (const r of teamReq){
     const box = document.createElement("div");
@@ -386,6 +555,7 @@ function renderRequests(){
         const rr = decideRequest(r.id, "approved");
         for (const d of rr.dates) addVacation(rr.team, d, rr.uid);
         renderCalendar();
+        renderWeek();
         renderRequests();
       });
 
@@ -410,6 +580,7 @@ function renderRequests(){
         for (const d of r.dates) removeVacation(r.team, d, r.uid);
         save();
         renderCalendar();
+        renderWeek();
         renderRequests();
       });
       btns.appendChild(b3);
@@ -419,20 +590,21 @@ function renderRequests(){
   }
 }
 
-/* Ejemplo: mete alguna solicitud y alguna vacación aprobada */
+/* ===== Demo ===== */
 function seedExample(){
   const team = "A";
   const y = state.view.getFullYear();
   const m = pad2(state.view.getMonth()+1);
 
-  // vacaciones aprobadas demo
+  // Vacaciones aprobadas demo
   addVacation(team, `${y}-${m}-10`, "u2");
   addVacation(team, `${y}-${m}-11`, "u2");
   addVacation(team, `${y}-${m}-15`, "u6");
 
-  // solicitud pendiente demo
+  // Solicitud pendiente demo
   createRequest(team, "u1", [`${y}-${m}-20`, `${y}-${m}-21`]);
 }
 
+/* ===== Boot ===== */
 load();
 renderAll();
