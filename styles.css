@@ -318,3 +318,11 @@ body.admin-mode{
 
 /* Asegura que weekWrap no compacte todo */
 .weekWrap{ margin-top:0; }
+
+/* === iOS: evitar zoom automático en inputs === */
+input,
+select,
+textarea,
+button {
+  font-size: 16px;
+}
