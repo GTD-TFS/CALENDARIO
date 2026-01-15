@@ -3,102 +3,165 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Calendario de trabajo (local)</title>
+  <title>Turnos</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="brand">Calendario</div>
 
-    <div class="actions">
-      <button id="btnPrev">◀</button>
-      <div id="monthLabel" class="month"></div>
-      <button id="btnNext">▶</button>
+  <!-- LOGIN (solo se ve si NO hay sesión) -->
+  <div id="loginScreen" style="display:none;max-width:420px;margin:40px auto;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(255,255,255,.03)">
+    <div style="font-weight:800;margin-bottom:10px">Acceso</div>
 
-      <select id="userSelect" title="Usuario">
-  <option value="u1">Javier</option>
-  <option value="u2">Marta</option>
-  <option value="u3">Sergio</option>
-  <option value="u4">Lucía</option>
-  <option value="u5">Pablo</option>
-  <option value="u6">Noelia</option>
-</select>
+    <input id="loginUser" placeholder="Usuario" autocomplete="username"
+           style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:transparent;color:inherit;margin-bottom:10px">
 
-      <label class="toggle">
-        <input id="adminToggle" type="checkbox">
-        <span>Admin</span>
-      </label>
-    </div>
-  </header>
+    <input id="loginPass" type="password" placeholder="Contraseña" autocomplete="current-password"
+           style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:transparent;color:inherit;margin-bottom:10px">
 
-  <main class="wrap">
-    <section class="card">
-      <div class="row">
-        <div class="muted">Equipo:</div>
-        <select id="teamSelect">
-          <option value="A">A</option>
-        </select>
-        <div class="muted">Usuario actual:</div>
-        <div id="userLabel">—</div>
-      </div>
+    <button id="loginBtn" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:transparent;color:inherit;cursor:pointer">
+      Entrar
+    </button>
 
-      <div id="calendar" class="calendar"></div>
-
-<div id="weekWrap" class="weekWrap">
-  <div class="weekTop">
-    <button id="btnWeekPrev" title="Semana anterior">◀</button>
-    <div id="weekLabel" class="weekLabel">—</div>
-    <button id="btnWeekNext" title="Semana siguiente">▶</button>
+    <div id="loginError" style="margin-top:10px;color:#ffb3b3;min-height:18px"></div>
   </div>
-  <div id="weekGrid" class="weekGrid"></div>
-</div>
 
-      <div class="legend">
-        <span class="pill">M = Mañana</span>
-        <span class="pill">T = Tarde</span>
-        <span class="pill vac">Vacaciones</span>
-        <span class="pill sel">Seleccionado</span>
+  <!-- APP (solo se ve si HAY sesión) -->
+  <div id="app" style="display:none">
+
+    <header class="topbar">
+      
+      <div class="brand"></div>
+
+      <div class="actions">
+        <button id="btnPrev">◀</button>
+        <div id="monthLabel" class="month"></div>
+        <button id="btnNext">▶</button>
+        <button id="btnAdmin" hidden>Administrar</button>
+
+        <!-- solo para pruebas / uso real: salir -->
+        <button id="btnLogout" title="Salir">Salir</button>
       </div>
+    </header>
 
-      <hr>
+    <main class="wrap">
+      <!-- CARD IZQUIERDA: calendario -->
+      <section class="card">
+        <div id="calendar" class="calendar"></div>
 
-      <div class="row">
-        <button id="btnSeed">Cargar ejemplo</button>
-        <button id="btnReset" class="danger">Reset local</button>
-        <button id="btnExport">Exportar JSON</button>
-        <button id="btnImport">Importar JSON</button>
-        <input id="fileImport" type="file" accept="application/json" class="hide">
-      </div>
-      <p class="muted small">
-        Export/Import te sirve para simular “compartir” datos sin Firebase.
-      </p>
-    </section>
+        <div id="weekWrap" class="weekWrap">
+          <div class="weekTop">
+            <button id="btnWeekPrev" title="Semana anterior">◀</button>
+            <div id="weekLabel" class="weekLabel">—</div>
+            <button id="btnWeekNext" title="Semana siguiente">▶</button>
+          </div>
+          <div id="weekGrid" class="weekGrid"></div>
+        </div>
+      </section>
 
-    <section class="card">
-      <h3>Solicitar vacaciones</h3>
-      <p class="muted">Selecciona días en el calendario y envía la solicitud.</p>
+      <!-- CARD DERECHA: vacaciones -->
+      <section class="card" id="vacacionesCard">
+        <div class="row" style="justify-content:space-between">
+          <button id="btnPedir" class="btnPedir">Pedir</button>
+          <button id="btnPedidos" class="btnPedidos">Pedidos</button>
+        </div>
 
-      <div id="selDates" class="selBox">—</div>
+        <div id="pedirBar" class="pedirBar" hidden>
+          <div class="muted small">Selecciona días en el calendario y confirma.</div>
+          <div class="row">
+            <button id="btnConfirmarPedido" disabled>Confirmar</button>
+            <button id="btnCancelarPedido">Cancelar</button>
+          </div>
+        </div>
 
-      <div class="row">
-        <button id="btnSendRequest" disabled>Enviar solicitud</button>
-        <button id="btnClearSel" disabled>Limpiar</button>
-      </div>
+        <div id="panelPedidos" class="panelPedidos" hidden></div>
+      </section>
+    </main>
 
-      <hr>
+  </div>
 
-      <h3>Solicitudes</h3>
-      <div id="adminInfo" class="muted">Activa “Admin” para aprobar/denegar.</div>
-      <div id="requests"></div>
-    </section>
-  </main>
+  <!-- Firebase libs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-  <script src="app.js"></script>
+  <!-- Tu init -->
+  <script src="./firebase.js"></script>
+  <script src="./auth.js"></script>
+
+  <!-- App -->
+  <script src="./app.js"></script>
+  <script src="./vacaciones.js"></script>
+  <script src="./admin.js"></script>
+
   <script>
+    // PWA SW
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js");
     }
   </script>
+
+  <script>
+    const loginScreen = document.getElementById("loginScreen");
+    const appWrap = document.getElementById("app");
+    const loginUser = document.getElementById("loginUser");
+    const loginPass = document.getElementById("loginPass");
+    const loginBtn  = document.getElementById("loginBtn");
+    const loginError = document.getElementById("loginError");
+    const btnLogout = document.getElementById("btnLogout");
+
+    function showLogin(on){
+      loginScreen.style.display = on ? "block" : "none";
+      appWrap.style.display = on ? "none" : "block";
+    }
+
+    // IMPORTANTE: sesión persistente en el móvil
+    fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    fbAuth.onAuthStateChanged(async (u)=>{
+  showLogin(!u);
+  if (!u) return;
+
+  // nombre visible (según lo que escribió o por email)
+  const displayName = Auth.nameFor(loginUser.value, u);
+
+ // guardar/actualizar perfil en Firestore (sin pisar campos como admin)
+const ref = fbDB.collection("users").doc(u.uid);
+try{
+  await ref.update({
+    name: displayName,
+    email: u.email || null,
+    updatedAt: Date.now()
+  });
+}catch(e){
+  // si el doc aún no existe, lo creamos
+  await ref.set({
+    name: displayName,
+    email: u.email || null,
+    updatedAt: Date.now()
+  }, { merge: true });
+}
+
+  // mostrar nombre en cabecera si existe .brand
+  const brand = document.querySelector(".brand");
+  if (brand) brand.textContent = displayName;
+});
+
+    loginBtn.addEventListener("click", async ()=>{
+      loginError.textContent = "";
+      try{
+        await Auth.login(loginUser.value, loginPass.value);
+        loginPass.value = "";
+      }catch(e){
+        loginError.textContent = "Usuario o contraseña incorrectos";
+      }
+    });
+
+    btnLogout.addEventListener("click", async ()=>{
+      await Auth.logout();
+    });
+  </script>
+
 </body>
 </html>
