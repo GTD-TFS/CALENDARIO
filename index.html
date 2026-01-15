@@ -30,26 +30,27 @@
   <!-- APP (solo se ve si HAY sesión) -->
   <div id="app" style="display:none">
 
-  <header class="topbar">
-  <div class="brand-actions">
-    <div class="brand"></div>
+    <header class="topbar">
+      <div class="brand"></div>
 
-    <div class="actions">
-      <button id="btnAdmin" hidden>Administrar</button>
-      <button id="btnLogout" title="Salir">Salir</button>
-    </div>
-  </div>
-
-  <div class="month-nav">
-    <button id="btnPrev">◀</button>
-    <div id="monthLabel" class="month"></div>
-    <button id="btnNext">▶</button>
-  </div>
-</header>
+      <!-- TOPBAR: solo admin + salir a la derecha -->
+      <div class="actions">
+        <button id="btnAdmin" hidden>Administrar</button>
+        <button id="btnLogout" title="Salir">Salir</button>
+      </div>
+    </header>
 
     <main class="wrap">
       <!-- CARD IZQUIERDA: calendario -->
       <section class="card">
+
+        <!-- MES (encima de SEMANA, dentro de la misma card) -->
+        <div class="monthTop">
+          <button id="btnPrev" title="Mes anterior">◀</button>
+          <div id="monthLabel" class="month">—</div>
+          <button id="btnNext" title="Mes siguiente">▶</button>
+        </div>
+
         <div id="calendar" class="calendar"></div>
 
         <div id="weekWrap" class="weekWrap">
@@ -122,33 +123,33 @@
     fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
     fbAuth.onAuthStateChanged(async (u)=>{
-  showLogin(!u);
-  if (!u) return;
+      showLogin(!u);
+      if (!u) return;
 
-  // nombre visible (según lo que escribió o por email)
-  const displayName = Auth.nameFor(loginUser.value, u);
+      // nombre visible (según lo que escribió o por email)
+      const displayName = Auth.nameFor(loginUser.value, u);
 
- // guardar/actualizar perfil en Firestore (sin pisar campos como admin)
-const ref = fbDB.collection("users").doc(u.uid);
-try{
-  await ref.update({
-    name: displayName,
-    email: u.email || null,
-    updatedAt: Date.now()
-  });
-}catch(e){
-  // si el doc aún no existe, lo creamos
-  await ref.set({
-    name: displayName,
-    email: u.email || null,
-    updatedAt: Date.now()
-  }, { merge: true });
-}
+      // guardar/actualizar perfil en Firestore (sin pisar campos como admin)
+      const ref = fbDB.collection("users").doc(u.uid);
+      try{
+        await ref.update({
+          name: displayName,
+          email: u.email || null,
+          updatedAt: Date.now()
+        });
+      }catch(e){
+        // si el doc aún no existe, lo creamos
+        await ref.set({
+          name: displayName,
+          email: u.email || null,
+          updatedAt: Date.now()
+        }, { merge: true });
+      }
 
-  // mostrar nombre en cabecera si existe .brand
-  const brand = document.querySelector(".brand");
-  if (brand) brand.textContent = displayName;
-});
+      // mostrar nombre en cabecera si existe .brand
+      const brand = document.querySelector(".brand");
+      if (brand) brand.textContent = displayName;
+    });
 
     loginBtn.addEventListener("click", async ()=>{
       loginError.textContent = "";
