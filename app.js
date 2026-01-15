@@ -306,6 +306,12 @@ window.AppTurnos = {
   markSelected: (dateStr, on)=>{ /* ...tu código... */ },
 
   isAdminMode: ()=> state.adminMode,
+
+  setViewMonth: async (year, month1to12)=>{
+    state.view = new Date(year, month1to12 - 1, 1);
+    await renderAll();
+  },
+
   refresh: async ()=> { await renderAll(); },
 };
 
