@@ -256,9 +256,8 @@ async function renderWeek(){
   const days = [...Array(7)].map((_,i)=> new Date(ws.getFullYear(), ws.getMonth(), ws.getDate()+i));
   const work = isWorkWeek(days[0]);
 
-  lab.textContent =
-    `${pad2(days[0].getDate())}/${pad2(days[0].getMonth()+1)}–${pad2(days[6].getDate())}/${pad2(days[6].getMonth()+1)} · ${work?"TRABAJO":"DESCANSO"}`;
-
+lab.textContent =
+  `${pad2(days[0].getDate())}/${pad2(days[0].getMonth()+1)}–${pad2(days[6].getDate())}/${pad2(days[6].getMonth()+1)}`;
   let assigns = {};
 if (work){
   const start = ymd(days[0]);
@@ -271,10 +270,10 @@ if (work){
 }
 
   grid.innerHTML =
-    "<div></div>" +
-    ["Mar","Mié","Jue","Vie","Sáb","Dom","Lun"]
-      .map((dw,i)=>`<div class="weekHead">${dw} ${days[i].getDate()}</div>`)
-      .join("");
+  "<div></div>" +
+  ["Mar","Mié","Jue","Vie","Sáb","Dom","Lun"]
+    .map((dw,i)=>`<div class="weekHead"><div class="wd">${dw}</div><div class="dn">${days[i].getDate()}</div></div>`)
+    .join("");
 
   for (const uid of TEAM){
     grid.innerHTML += `<div class="weekName">${USERS[uid].name}</div>`;
