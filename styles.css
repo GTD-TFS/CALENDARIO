@@ -22,55 +22,60 @@ body{
   font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto;
 }
 
-/* ===== TOPBAR (FIX sin pisados) ===== */
+/* ===== TOPBAR: nombre izquierda, botones derecha ===== */
 .topbar{
-  position:sticky;
+  position: sticky;
   top:0;
+  z-index: 10;
+
   background:rgba(10,15,30,.7);
   backdrop-filter:blur(10px);
   border-bottom:1px solid var(--edge);
 
-  /* CAMBIO: 2 filas, no absoluto */
   display:flex;
-  flex-direction:column;
-  align-items:stretch;
-  padding:10px 12px;
+  align-items:center;
   gap:10px;
+  padding:10px 12px;
 }
 
-/* fila 1: nombre izq, botones der */
-.topbar .brand-actions{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
+.brand{
+  font-weight:700;
 }
 
-.brand{ font-weight:700; }
-
-/* fila 2: mes centrado + flechas */
-.topbar .month-nav{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:14px;               /* “no muy pegadas” */
-  padding-top:2px;
-}
-
-#monthLabel.month{
-  min-width:160px;
-  text-align:center;
-  font-weight:650;
-  position:static;        /* CLAVE: fuera absoluto, ya no pisa nada */
-  transform:none;
-  pointer-events:auto;
-}
-
+/* acciones SIEMPRE a la derecha */
 .actions{
+  margin-left:auto;
   display:flex;
   gap:8px;
   align-items:center;
   flex-wrap:wrap;
+}
+
+/* ===== Mes y semana: grids separados y con separación ===== */
+.monthTop,
+.weekTop{
+  display:grid;
+  grid-template-columns: 44px 1fr 44px; /* ◀ | label | ▶ */
+  align-items:center;
+  gap:12px;
+}
+
+.monthTop{
+  margin-bottom:14px; /* aire con calendario */
+}
+
+.weekWrap{
+  margin-top:18px; /* aire desde calendario */
+}
+
+.weekTop{
+  margin-bottom:12px; /* aire con weekGrid */
+}
+
+.month,
+.weekLabel{
+  text-align:center;
+  font-weight:650;
 }
 /* ===== LAYOUT ===== */
 .wrap{
