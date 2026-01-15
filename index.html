@@ -31,14 +31,13 @@
   <div id="app" style="display:none">
 
     <header class="topbar">
-      <div class="brand"></div>
+  <div class="brand"></div>
 
-      <!-- TOPBAR: solo admin + salir a la derecha -->
-      <div class="actions">
-        <button id="btnAdmin" hidden>Administrar</button>
-        <button id="btnLogout" title="Salir">Salir</button>
-      </div>
-    </header>
+  <div class="actions">
+    <button id="btnAdmin" hidden>Administrar</button>
+    <button id="btnLogout" title="Salir">Salir</button>
+  </div>
+</header>
 
     <main class="wrap">
       <!-- CARD IZQUIERDA: calendario -->
@@ -46,21 +45,21 @@
 
         <!-- MES (encima de SEMANA, dentro de la misma card) -->
         <div class="monthTop">
-          <button id="btnPrev" title="Mes anterior">◀</button>
-          <div id="monthLabel" class="month">—</div>
-          <button id="btnNext" title="Mes siguiente">▶</button>
-        </div>
+  <button id="btnPrev" title="Mes anterior">◀</button>
+  <div id="monthLabel" class="month">—</div>
+  <button id="btnNext" title="Mes siguiente">▶</button>
+</div>
 
-        <div id="calendar" class="calendar"></div>
+<div id="calendar" class="calendar"></div>
 
-        <div id="weekWrap" class="weekWrap">
-          <div class="weekTop">
-            <button id="btnWeekPrev" title="Semana anterior">◀</button>
-            <div id="weekLabel" class="weekLabel">—</div>
-            <button id="btnWeekNext" title="Semana siguiente">▶</button>
-          </div>
-          <div id="weekGrid" class="weekGrid"></div>
-        </div>
+<div id="weekWrap" class="weekWrap">
+  <div class="weekTop">
+    <button id="btnWeekPrev" title="Semana anterior">◀</button>
+    <div id="weekLabel" class="weekLabel">—</div>
+    <button id="btnWeekNext" title="Semana siguiente">▶</button>
+  </div>
+  <div id="weekGrid" class="weekGrid"></div>
+</div>
       </section>
 
       <!-- CARD DERECHA: vacaciones -->
