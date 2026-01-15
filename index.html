@@ -30,20 +30,22 @@
   <!-- APP (solo se ve si HAY sesión) -->
   <div id="app" style="display:none">
 
-    <header class="topbar">
-      
-      <div class="brand"></div>
+  <header class="topbar">
+  <div class="brand-actions">
+    <div class="brand"></div>
 
-      <div class="actions">
-        <button id="btnPrev">◀</button>
-        <div id="monthLabel" class="month"></div>
-        <button id="btnNext">▶</button>
-        <button id="btnAdmin" hidden>Administrar</button>
+    <div class="actions">
+      <button id="btnAdmin" hidden>Administrar</button>
+      <button id="btnLogout" title="Salir">Salir</button>
+    </div>
+  </div>
 
-        <!-- solo para pruebas / uso real: salir -->
-        <button id="btnLogout" title="Salir">Salir</button>
-      </div>
-    </header>
+  <div class="month-nav">
+    <button id="btnPrev">◀</button>
+    <div id="monthLabel" class="month"></div>
+    <button id="btnNext">▶</button>
+  </div>
+</header>
 
     <main class="wrap">
       <!-- CARD IZQUIERDA: calendario -->
