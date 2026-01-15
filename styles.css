@@ -22,7 +22,7 @@ body{
   font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto;
 }
 
-/* ===== TOPBAR ===== */
+/* ===== TOPBAR (FIX sin pisados) ===== */
 .topbar{
   position:sticky;
   top:0;
@@ -30,62 +30,48 @@ body{
   backdrop-filter:blur(10px);
   border-bottom:1px solid var(--edge);
 
+  /* CAMBIO: 2 filas, no absoluto */
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  padding:10px 12px;
+  gap:10px;
+}
+
+/* fila 1: nombre izq, botones der */
+.topbar .brand-actions{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:10px 12px;
-  gap:10px;
-
-  /* CLAVE para centrar el mes absoluto */
-  position: sticky;
+  gap:12px;
 }
-.topbar{ position: sticky; top:0; } /* por si tu editor reordena, dejamos explícito */
-.topbar{ position: relative; }      /* CLAVE: mes centrado */
 
-.brand{font-weight:700}
+.brand{ font-weight:700; }
+
+/* fila 2: mes centrado + flechas */
+.topbar .month-nav{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;               /* “no muy pegadas” */
+  padding-top:2px;
+}
+
+#monthLabel.month{
+  min-width:160px;
+  text-align:center;
+  font-weight:650;
+  position:static;        /* CLAVE: fuera absoluto, ya no pisa nada */
+  transform:none;
+  pointer-events:auto;
+}
+
 .actions{
   display:flex;
   gap:8px;
   align-items:center;
   flex-wrap:wrap;
 }
-
-/* Mes centrado real */
-#monthLabel.month{
-  min-width:160px;
-  text-align:center;
-  font-weight:650;
-
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-  pointer-events:none; /* evita que tape clicks */
-}
-
-/* Admin + Salir a la derecha */
-#btnAdmin{ margin-left:auto; }
-
-button, select{
-  background:transparent;
-  color:var(--txt);
-  border:1px solid var(--edge);
-  border-radius:10px;
-  padding:8px 10px;
-  cursor:pointer;
-}
-button:disabled{opacity:.5;cursor:not-allowed}
-button.danger{border-color:rgba(255,79,79,.5);color:#ffd7d7}
-
-.hide{display:none}
-.toggle{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  border:1px solid var(--edge);
-  border-radius:10px;
-  padding:6px 10px;
-}
-
 /* ===== LAYOUT ===== */
 .wrap{
   max-width:1100px;
