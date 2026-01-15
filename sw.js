@@ -1,4 +1,4 @@
-const CACHE = "cal-local-v7";
+const CACHE = "cal-local-v8";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,6 +8,7 @@ const ASSETS = [
   "./app.js",
   "./vacaciones.js",
   "./admin.js",
+  "./semester.js",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png"
