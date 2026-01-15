@@ -268,3 +268,53 @@ body.admin-mode{
   gap:12px;
   margin-bottom:12px;
 }
+/* ===== CABECERAS (MES y SEMANA) en grids independientes y separados ===== */
+
+/* fila del MES (btnPrev · monthLabel · btnNext) */
+.monthTop{
+  display:grid;
+  grid-template-columns: 52px 1fr 52px;
+  align-items:center;
+  gap:14px;
+  padding:10px 8px 14px;
+  margin-bottom:10px;
+  border-bottom:1px solid var(--edge);
+}
+.monthTop #monthLabel{
+  text-align:center;
+  font-weight:800;
+  font-size:26px;
+  letter-spacing:.3px;
+}
+.monthTop #btnPrev{ justify-self:start; }
+.monthTop #btnNext{ justify-self:end; }
+
+/* fila de la SEMANA (btnWeekPrev · weekLabel · btnWeekNext) */
+.weekTop{
+  display:grid;
+  grid-template-columns: 52px 1fr 52px;
+  align-items:center;
+  gap:14px;
+  padding:14px 8px 8px;
+  margin-top:6px;           /* separa MES vs SEMANA */
+  margin-bottom:10px;       /* separa SEMANA vs cabecera de días */
+}
+.weekTop #weekLabel{
+  text-align:center;
+  font-weight:800;
+  font-size:22px;
+  letter-spacing:.3px;
+}
+.weekTop #btnWeekPrev{ justify-self:start; }
+.weekTop #btnWeekNext{ justify-self:end; }
+
+/* opcional: hace que las flechas no se vean “pegadas” al borde del card */
+.monthTop button,
+.weekTop button{
+  min-width:46px;
+  min-height:40px;
+  border-radius:14px;
+}
+
+/* Asegura que weekWrap no compacte todo */
+.weekWrap{ margin-top:0; }
