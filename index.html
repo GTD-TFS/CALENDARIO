@@ -4,67 +4,70 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Turnos</title>
+
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
 
-  <!-- LOGIN (solo se ve si NO hay sesión) -->
+  <!-- LOGIN -->
   <div id="loginScreen" style="display:none;max-width:420px;margin:40px auto;padding:16px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(255,255,255,.03)">
     <div style="font-weight:800;margin-bottom:10px">Acceso</div>
 
-    <input id="loginUser" placeholder="Usuario" autocomplete="username"
-           style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:transparent;color:inherit;margin-bottom:10px">
+    <input id="loginUser" placeholder="Usuario" autocomplete="username">
+    <input id="loginPass" type="password" placeholder="Contraseña" autocomplete="current-password">
 
-    <input id="loginPass" type="password" placeholder="Contraseña" autocomplete="current-password"
-           style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:transparent;color:inherit;margin-bottom:10px">
-
-    <button id="loginBtn" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:transparent;color:inherit;cursor:pointer">
-      Entrar
-    </button>
-
-    <div id="loginError" style="margin-top:10px;color:#ffb3b3;min-height:18px"></div>
+    <button id="loginBtn">Entrar</button>
+    <div id="loginError"></div>
   </div>
 
-  <!-- APP (solo se ve si HAY sesión) -->
+  <!-- APP -->
   <div id="app" style="display:none">
 
+    <!-- TOPBAR -->
     <header class="topbar">
-      
-      <div class="brand"></div>
 
-      <div class="actions">
+      <!-- FILA 1 -->
+      <div class="topbar-row topbar-main">
+        <div class="brand"></div>
+
+        <div class="actions">
+          <button id="btnAdmin" hidden>Administrar</button>
+          <button id="btnLogout">Salir</button>
+        </div>
+      </div>
+
+      <!-- FILA 2 -->
+      <div class="topbar-row topbar-month">
         <button id="btnPrev">◀</button>
         <div id="monthLabel" class="month"></div>
         <button id="btnNext">▶</button>
-        <button id="btnAdmin" hidden>Administrar</button>
-
-        <!-- solo para pruebas / uso real: salir -->
-        <button id="btnLogout" title="Salir">Salir</button>
       </div>
+
     </header>
 
     <main class="wrap">
-      <!-- CARD IZQUIERDA: calendario -->
+
+      <!-- CALENDARIO -->
       <section class="card">
         <div id="calendar" class="calendar"></div>
 
         <div id="weekWrap" class="weekWrap">
           <div class="weekTop">
-            <button id="btnWeekPrev" title="Semana anterior">◀</button>
+            <button id="btnWeekPrev">◀</button>
             <div id="weekLabel" class="weekLabel">—</div>
-            <button id="btnWeekNext" title="Semana siguiente">▶</button>
+            <button id="btnWeekNext">▶</button>
           </div>
           <div id="weekGrid" class="weekGrid"></div>
         </div>
       </section>
 
-      <!-- CARD DERECHA: vacaciones -->
+      <!-- VACACIONES -->
       <section class="card" id="vacacionesCard">
-        <div class="row" style="justify-content:space-between">
-          <button id="btnPedir" class="btnPedir">Pedir</button>
-          <button id="btnPedidos" class="btnPedidos">Pedidos</button>
+        <div class="row row-between">
+          <button id="btnPedir">Pedir</button>
+          <button id="btnPedidos">Pedidos</button>
         </div>
 
         <div id="pedirBar" class="pedirBar" hidden>
@@ -77,90 +80,25 @@
 
         <div id="panelPedidos" class="panelPedidos" hidden></div>
       </section>
-    </main>
 
+    </main>
   </div>
 
-  <!-- Firebase libs -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-  <!-- Tu init -->
   <script src="./firebase.js"></script>
   <script src="./auth.js"></script>
-
-  <!-- App -->
   <script src="./app.js"></script>
   <script src="./vacaciones.js"></script>
   <script src="./admin.js"></script>
 
   <script>
-    // PWA SW
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js");
     }
-  </script>
-
-  <script>
-    const loginScreen = document.getElementById("loginScreen");
-    const appWrap = document.getElementById("app");
-    const loginUser = document.getElementById("loginUser");
-    const loginPass = document.getElementById("loginPass");
-    const loginBtn  = document.getElementById("loginBtn");
-    const loginError = document.getElementById("loginError");
-    const btnLogout = document.getElementById("btnLogout");
-
-    function showLogin(on){
-      loginScreen.style.display = on ? "block" : "none";
-      appWrap.style.display = on ? "none" : "block";
-    }
-
-    // IMPORTANTE: sesión persistente en el móvil
-    fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-    fbAuth.onAuthStateChanged(async (u)=>{
-  showLogin(!u);
-  if (!u) return;
-
-  // nombre visible (según lo que escribió o por email)
-  const displayName = Auth.nameFor(loginUser.value, u);
-
- // guardar/actualizar perfil en Firestore (sin pisar campos como admin)
-const ref = fbDB.collection("users").doc(u.uid);
-try{
-  await ref.update({
-    name: displayName,
-    email: u.email || null,
-    updatedAt: Date.now()
-  });
-}catch(e){
-  // si el doc aún no existe, lo creamos
-  await ref.set({
-    name: displayName,
-    email: u.email || null,
-    updatedAt: Date.now()
-  }, { merge: true });
-}
-
-  // mostrar nombre en cabecera si existe .brand
-  const brand = document.querySelector(".brand");
-  if (brand) brand.textContent = displayName;
-});
-
-    loginBtn.addEventListener("click", async ()=>{
-      loginError.textContent = "";
-      try{
-        await Auth.login(loginUser.value, loginPass.value);
-        loginPass.value = "";
-      }catch(e){
-        loginError.textContent = "Usuario o contraseña incorrectos";
-      }
-    });
-
-    btnLogout.addEventListener("click", async ()=>{
-      await Auth.logout();
-    });
   </script>
 
 </body>
