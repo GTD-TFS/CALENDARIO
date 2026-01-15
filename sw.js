@@ -1,4 +1,4 @@
-const CACHE = "cal-local-v8";
+const CACHE = "cal-local-v9";
 const ASSETS = [
   "./",
   "./index.html",
@@ -10,8 +10,8 @@ const ASSETS = [
   "./admin.js",
   "./semester.js",
   "./manifest.webmanifest",
-  "./icon-192.png",
-  "./icon-512.png"
+ "./icons/icon-192.png",
+  "./icons/icon-512.png"
 ];
 
 self.addEventListener("install", (e)=>{
