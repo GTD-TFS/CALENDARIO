@@ -254,3 +254,12 @@ body.admin-mode{
   --card: rgba(90, 30, 30, .45);
   --edge: rgba(255, 120, 120, .45);
 }
+
+/* Mes dentro de la card izquierda, encima de la semana (con aire) */
+.monthTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
