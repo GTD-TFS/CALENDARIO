@@ -75,23 +75,24 @@ hr{border:0;border-top:1px solid var(--edge);margin:12px 0}
 .weekWrap{display:none;margin-top:12px}
 .weekTop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
 .weekLabel{flex:1;text-align:center;font-weight:700;color:var(--txt)}
-.weekGrid{
-  display:grid;
-  grid-template-columns: 86px repeat(7, 1fr);
-  gap:6px;
-}
+
 .weekHead{
   text-align:center;
   font-size:12px;
   color:var(--muted);
   padding:6px 0;
 }
+.weekGrid{
+  display:grid;
+  grid-template-columns: 62px repeat(7, 1fr); /* antes 86px */
+  gap:6px;
+}
 .weekName{
   display:flex;align-items:center;
   font-weight:650;
-  font-size:12px;
+  font-size:11px;           /* antes 12px */
   color:rgba(255,255,255,.82);
-  padding:8px 6px;
+  padding:6px 6px;          /* antes 8px 6px */
   border:1px solid var(--edge);
   border-radius:12px;
   background:rgba(255,255,255,.02);
@@ -100,9 +101,9 @@ hr{border:0;border-top:1px solid var(--edge);margin:12px 0}
   border:1px solid var(--edge);
   border-radius:12px;
   text-align:center;
-  padding:10px 0;
+  padding:8px 0;            /* antes 10px 0 */
   font-weight:900;
-  font-size:16px;
+  font-size:15px;           /* antes 16px */
   background:rgba(255,255,255,.02);
   user-select:none;
 }
@@ -115,4 +116,42 @@ hr{border:0;border-top:1px solid var(--edge);margin:12px 0}
   /* En móvil ocultamos la mensual y mostramos la semanal */
   .calendar{display:none !important;}
   .weekWrap{display:block;}
+}
+/* Botonera vacaciones */
+.btnPedir,.btnPedidos{min-width:120px}
+.pedirBar{margin-top:10px;border:1px solid var(--edge);border-radius:14px;padding:10px;background:rgba(255,255,255,.02)}
+.panelPedidos{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.pedidoItem{
+  border:1px solid var(--edge);border-radius:14px;padding:10px;background:rgba(255,255,255,.02)
+}
+.pedidoItem .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.pedidoItem .dates{margin-top:6px;color:var(--muted);font-size:12px}
+.pedidoItem .actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+
+/* selección de días para pedir (solo durante modo Pedir) */
+/* selección de días para pedir (borde amarillo grueso) */
+/* selección de días para pedir (borde amarillo grueso) */
+.day.reqSel,
+.weekCell.reqSel{
+  outline: 4px solid rgba(255, 210, 70, .95) !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px rgba(0,0,0,.35) inset;
+}
+#vacacionesCard{ margin-left: 10px; }      /* desktop: separa del calendario */
+@media (max-width:900px){
+  #vacacionesCard{ margin-left: 0; margin-top: 16px; } /* móvil: separa vertical */
+}
+.tag.v{
+  border-color: rgba(120,220,180,.65);
+  color: rgba(215,255,240,.95);
+}
+.weekCell.v{
+  border-color: rgba(120,220,180,.65);
+  color: rgba(215,255,240,.95);
+}
+.weekCell.r{ border-color: rgba(200,200,255,.55); }
+/* ===== MODO ADMIN ===== */
+body.admin-mode{
+  --card: rgba(90, 30, 30, .45);
+  --edge: rgba(255, 120, 120, .45);
 }
