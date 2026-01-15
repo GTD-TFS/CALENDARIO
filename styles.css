@@ -283,7 +283,7 @@ body.admin-mode{
 .monthTop #monthLabel{
   text-align:center;
   font-weight:800;
-  font-size:26px;
+  font-size:20px;
   letter-spacing:.3px;
 }
 .monthTop #btnPrev{ justify-self:start; }
