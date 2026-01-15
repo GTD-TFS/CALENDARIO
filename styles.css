@@ -6,7 +6,11 @@
   --muted:rgba(255,255,255,.65);
 
   --ok:rgba(120,220,180,.55);
-  --pick:rgba(255,210,70,.95);
+  --sel:rgba(170,200,255,.55);
+
+  /* selección vacaciones (amarillo) */
+  --pick: rgba(255, 210, 70, .95);
+
   --danger:#ff4f4f;
 }
 
@@ -25,43 +29,62 @@ body{
   background:rgba(10,15,30,.7);
   backdrop-filter:blur(10px);
   border-bottom:1px solid var(--edge);
-  padding:10px 12px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
 
-.topbar-row{
   display:flex;
   align-items:center;
-}
-
-.topbar-main{
   justify-content:space-between;
+  padding:10px 12px;
+  gap:10px;
+
+  /* CLAVE para centrar el mes absoluto */
+  position: sticky;
 }
+.topbar{ position: sticky; top:0; } /* por si tu editor reordena, dejamos explícito */
+.topbar{ position: relative; }      /* CLAVE: mes centrado */
 
-.topbar-month{
-  justify-content:center;
-  gap:14px;
-}
-
-.brand{font-weight:800;font-size:16px}
-
+.brand{font-weight:700}
 .actions{
   display:flex;
   gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
 }
 
-/* ===== BOTONES ===== */
-button{
+/* Mes centrado real */
+#monthLabel.month{
+  min-width:160px;
+  text-align:center;
+  font-weight:650;
+
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  pointer-events:none; /* evita que tape clicks */
+}
+
+/* Admin + Salir a la derecha */
+#btnAdmin{ margin-left:auto; }
+
+button, select{
   background:transparent;
   color:var(--txt);
   border:1px solid var(--edge);
-  border-radius:12px;
-  padding:8px 12px;
+  border-radius:10px;
+  padding:8px 10px;
   cursor:pointer;
 }
-button:disabled{opacity:.5}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.danger{border-color:rgba(255,79,79,.5);color:#ffd7d7}
+
+.hide{display:none}
+.toggle{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  border:1px solid var(--edge);
+  border-radius:10px;
+  padding:6px 10px;
+}
 
 /* ===== LAYOUT ===== */
 .wrap{
@@ -72,23 +95,18 @@ button:disabled{opacity:.5}
   grid-template-columns:1.3fr 1fr;
   gap:12px;
 }
-@media (max-width:900px){
-  .wrap{grid-template-columns:1fr}
-}
-
 .card{
   background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.15));
   border:1px solid var(--edge);
-  border-radius:18px;
+  border-radius:16px;
   padding:12px;
 }
-
-.row{display:flex;gap:10px;align-items:center}
-.row-between{justify-content:space-between}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .muted{color:var(--muted)}
 .small{font-size:12px}
+@media (max-width: 900px){ .wrap{grid-template-columns:1fr} }
 
-/* ===== CALENDARIO ===== */
+/* ===== CALENDARIO MENSUAL ===== */
 .calendar{
   margin-top:12px;
   display:grid;
@@ -100,70 +118,153 @@ button:disabled{opacity:.5}
   border-radius:12px;
   padding:8px;
   min-height:70px;
+  cursor:pointer;
   background:rgba(255,255,255,.03);
 }
+.day.off{opacity:.35;cursor:default}
+.day .d{font-weight:700;font-size:12px;color:var(--muted)}
 
-/* ===== SEMANAL ===== */
-.weekWrap{display:none;margin-top:12px}
-
-.weekTop{
+.people{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.person{
   display:flex;
-  justify-content:space-between;
   align-items:center;
-  margin-bottom:8px;
+  justify-content:space-between;
+  border:1px solid var(--edge);
+  border-radius:12px;
+  padding:6px 8px;
+  background:rgba(255,255,255,.02)
 }
+.person .name{font-size:13px}
 
-.weekLabel{
-  font-weight:700;
+.tag{
+  min-width:34px;
+  text-align:center;
+  font-weight:800;
+  border-radius:10px;
+  padding:4px 10px;
+  border:1px solid var(--edge);
+}
+.tag.m{border-color:rgba(170,200,255,.65); color:rgba(210,230,255,.95)}
+.tag.t{border-color:rgba(255,190,120,.65); color:rgba(255,230,200,.95)}
+.tag.v{border-color:rgba(120,220,180,.65); color:rgba(215,255,240,.95)}
+
+.day.rest{ background:rgba(255,255,255,.02) }
+.restLabel{
+  margin-top:10px;
+  font-weight:800;
+  color:rgba(255,255,255,.70);
+  border:1px dashed var(--edge);
+  border-radius:12px;
+  padding:8px;
   text-align:center;
 }
 
-.weekGrid{
-  display:grid;
-  grid-template-columns:62px repeat(7,1fr);
-  gap:6px;
+/* ===== VISTA SEMANAL (móvil) ===== */
+.weekWrap{display:none;margin-top:12px}
+.weekTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:10px
+}
+.weekLabel{
+  flex:1;
+  text-align:center;
+  font-weight:700;
+  color:var(--txt)
 }
 
+/* Cabecera semanal preparada para 2 líneas:
+   en JS tendrás: <div class="weekHead"><div class="wd">Dom</div><div class="dn">8</div></div> */
 .weekHead{
   text-align:center;
   font-size:12px;
+  color:var(--muted);
+  padding:6px 0;
+
   display:flex;
   flex-direction:column;
   align-items:center;
+  line-height:1.05;
 }
-.weekHead .dn{margin-top:2px}
+.weekHead .wd{ font-size:12px; }
+.weekHead .dn{ font-size:12px; color:var(--muted); margin-top:2px; }
 
+.weekGrid{
+  display:grid;
+  grid-template-columns: 62px repeat(7, 1fr);
+  gap:6px;
+}
+.weekName{
+  display:flex;
+  align-items:center;
+  font-weight:650;
+  font-size:11px;
+  color:rgba(255,255,255,.82);
+  padding:6px 6px;
+  border:1px solid var(--edge);
+  border-radius:12px;
+  background:rgba(255,255,255,.02);
+}
 .weekCell{
   border:1px solid var(--edge);
   border-radius:12px;
-  padding:8px 0;
   text-align:center;
+  padding:8px 0;
   font-weight:900;
+  font-size:15px;
+  background:rgba(255,255,255,.02);
+  user-select:none;
+}
+.weekCell.m{border-color:rgba(170,200,255,.65); color:rgba(210,230,255,.95)}
+.weekCell.t{border-color:rgba(255,190,120,.65); color:rgba(255,230,200,.95)}
+.weekCell.v{border-color:rgba(120,220,180,.65); color:rgba(215,255,240,.95)}
+.weekCell.r{border-color:rgba(200,200,255,.55)}
+.weekCell.off{opacity:.28}
+
+@media (max-width: 820px){
+  .calendar{display:none !important;}
+  .weekWrap{display:block;}
 }
 
-/* ===== VACACIONES ===== */
+/* ===== VACACIONES UI ===== */
+.btnPedir,.btnPedidos{min-width:120px}
 .pedirBar{
   margin-top:10px;
   border:1px solid var(--edge);
   border-radius:14px;
   padding:10px;
+  background:rgba(255,255,255,.02)
 }
-
-.panelPedidos{
-  margin-top:10px;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
+.panelPedidos{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.pedidoItem{
+  border:1px solid var(--edge);
+  border-radius:14px;
+  padding:10px;
+  background:rgba(255,255,255,.02)
 }
+.pedidoItem .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.pedidoItem .dates{margin-top:6px;color:var(--muted);font-size:12px}
+.pedidoItem .actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
 
+/* Selección de días para pedir (borde amarillo grueso) */
 .day.reqSel,
 .weekCell.reqSel{
-  outline:4px solid var(--pick);
-  outline-offset:2px;
+  outline: 4px solid var(--pick) !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px rgba(0,0,0,.35) inset;
 }
 
-/* ===== MODO ADMIN ===== */
+/* Ajuste desktop de separación */
+#vacacionesCard{ margin-left: 10px; }
+@media (max-width:900px){
+  #vacacionesCard{ margin-left: 0; margin-top: 16px; }
+}
+
+/* ===== MODO ADMIN (tinte distinto) =====
+   No toca tu fondo general, solo “card/edge” para que se note. */
 body.admin-mode{
-  --card:rgba(90,30,30,.45);
-  --edge:rgba(255,120,120,.45);
+  --card: rgba(90, 30, 30, .45);
+  --edge: rgba(255, 120, 120, .45);
 }
