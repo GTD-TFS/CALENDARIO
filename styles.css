@@ -1,67 +1,154 @@
 :root{
-  --bg:#0b1220; --card:#111a2e; --edge:rgba(255,255,255,.12);
-  --txt:rgba(255,255,255,.92); --muted:rgba(255,255,255,.65);
-  --ok:rgba(120,220,180,.55); --sel:rgba(170,200,255,.55);
+  --bg:#0b1220;
+  --card:#111a2e;
+  --edge:rgba(255,255,255,.12);
+  --txt:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.65);
+
+  --ok:rgba(120,220,180,.55);
+  --sel:rgba(170,200,255,.55);
+
+  /* selección vacaciones (amarillo) */
+  --pick: rgba(255, 210, 70, .95);
+
   --danger:#ff4f4f;
 }
+
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto}
-.topbar{position:sticky;top:0;background:rgba(10,15,30,.7);backdrop-filter:blur(10px);border-bottom:1px solid var(--edge)}
-.topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;gap:10px}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--txt);
+  font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto;
+}
+
+/* ===== TOPBAR ===== */
+.topbar{
+  position:sticky;
+  top:0;
+  background:rgba(10,15,30,.7);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--edge);
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 12px;
+  gap:10px;
+
+  /* CLAVE para centrar el mes absoluto */
+  position: sticky;
+}
+.topbar{ position: sticky; top:0; } /* por si tu editor reordena, dejamos explícito */
+.topbar{ position: relative; }      /* CLAVE: mes centrado */
+
 .brand{font-weight:700}
-.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.actions{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+/* Mes centrado real */
+#monthLabel.month{
+  min-width:160px;
+  text-align:center;
+  font-weight:650;
+
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  pointer-events:none; /* evita que tape clicks */
+}
+
+/* Admin + Salir a la derecha */
+#btnAdmin{ margin-left:auto; }
+
 button, select{
-  background:transparent;color:var(--txt);
-  border:1px solid var(--edge);border-radius:10px;padding:8px 10px;cursor:pointer
+  background:transparent;
+  color:var(--txt);
+  border:1px solid var(--edge);
+  border-radius:10px;
+  padding:8px 10px;
+  cursor:pointer;
 }
 button:disabled{opacity:.5;cursor:not-allowed}
 button.danger{border-color:rgba(255,79,79,.5);color:#ffd7d7}
+
 .hide{display:none}
-.toggle{display:flex;gap:8px;align-items:center;border:1px solid var(--edge);border-radius:10px;padding:6px 10px}
-.month{min-width:160px;text-align:center;font-weight:650}
-.wrap{max-width:1100px;margin:14px auto;padding:0 12px;display:grid;grid-template-columns:1.3fr 1fr;gap:12px}
-.card{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.15));border:1px solid var(--edge);border-radius:16px;padding:12px}
+.toggle{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  border:1px solid var(--edge);
+  border-radius:10px;
+  padding:6px 10px;
+}
+
+/* ===== LAYOUT ===== */
+.wrap{
+  max-width:1100px;
+  margin:14px auto;
+  padding:0 12px;
+  display:grid;
+  grid-template-columns:1.3fr 1fr;
+  gap:12px;
+}
+.card{
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.15));
+  border:1px solid var(--edge);
+  border-radius:16px;
+  padding:12px;
+}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .muted{color:var(--muted)}
 .small{font-size:12px}
-.calendar{margin-top:12px;display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
-.day{border:1px solid var(--edge);border-radius:12px;padding:8px;min-height:70px;cursor:pointer;background:rgba(255,255,255,.03)}
+@media (max-width: 900px){ .wrap{grid-template-columns:1fr} }
+
+/* ===== CALENDARIO MENSUAL ===== */
+.calendar{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:6px;
+}
+.day{
+  border:1px solid var(--edge);
+  border-radius:12px;
+  padding:8px;
+  min-height:70px;
+  cursor:pointer;
+  background:rgba(255,255,255,.03);
+}
 .day.off{opacity:.35;cursor:default}
 .day .d{font-weight:700;font-size:12px;color:var(--muted)}
-.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.badge{font-size:12px;border:1px solid var(--edge);border-radius:999px;padding:2px 8px}
-.badge.vac{border-color:var(--ok)}
-.badge.sel{border-color:var(--sel)}
-.legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.pill{border:1px solid var(--edge);border-radius:999px;padding:4px 10px;font-size:12px}
-.pill.vac{border-color:var(--ok)}
-.pill.sel{border-color:var(--sel)}
-.selBox{padding:8px;border:1px dashed var(--edge);border-radius:12px;color:var(--muted);min-height:38px}
-hr{border:0;border-top:1px solid var(--edge);margin:12px 0}
 
-.req{border:1px solid var(--edge);border-radius:12px;padding:10px;margin-top:8px}
-.req h4{margin:0 0 6px 0;font-size:13px}
-.req .meta{color:var(--muted);font-size:12px}
-.req .btns{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
-
-@media (max-width: 900px){ .wrap{grid-template-columns:1fr} }
 .people{margin-top:8px;display:flex;flex-direction:column;gap:6px}
 .person{
-  display:flex;align-items:center;justify-content:space-between;
-  border:1px solid var(--edge);border-radius:12px;padding:6px 8px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border:1px solid var(--edge);
+  border-radius:12px;
+  padding:6px 8px;
   background:rgba(255,255,255,.02)
 }
 .person .name{font-size:13px}
+
 .tag{
-  min-width:34px;text-align:center;font-weight:800;
-  border-radius:10px;padding:4px 10px;border:1px solid var(--edge);
+  min-width:34px;
+  text-align:center;
+  font-weight:800;
+  border-radius:10px;
+  padding:4px 10px;
+  border:1px solid var(--edge);
 }
 .tag.m{border-color:rgba(170,200,255,.65); color:rgba(210,230,255,.95)}
 .tag.t{border-color:rgba(255,190,120,.65); color:rgba(255,230,200,.95)}
 .tag.v{border-color:rgba(120,220,180,.65); color:rgba(215,255,240,.95)}
-.day.rest{
-  background:rgba(255,255,255,.02);
-}
+
+.day.rest{ background:rgba(255,255,255,.02) }
 .restLabel{
   margin-top:10px;
   font-weight:800;
@@ -71,28 +158,51 @@ hr{border:0;border-top:1px solid var(--edge);margin:12px 0}
   padding:8px;
   text-align:center;
 }
-/* === Vista semanal (móvil) === */
-.weekWrap{display:none;margin-top:12px}
-.weekTop{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
-.weekLabel{flex:1;text-align:center;font-weight:700;color:var(--txt)}
 
+/* ===== VISTA SEMANAL (móvil) ===== */
+.weekWrap{display:none;margin-top:12px}
+.weekTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:10px
+}
+.weekLabel{
+  flex:1;
+  text-align:center;
+  font-weight:700;
+  color:var(--txt)
+}
+
+/* Cabecera semanal preparada para 2 líneas:
+   en JS tendrás: <div class="weekHead"><div class="wd">Dom</div><div class="dn">8</div></div> */
 .weekHead{
   text-align:center;
   font-size:12px;
   color:var(--muted);
   padding:6px 0;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  line-height:1.05;
 }
+.weekHead .wd{ font-size:12px; }
+.weekHead .dn{ font-size:12px; color:var(--muted); margin-top:2px; }
+
 .weekGrid{
   display:grid;
-  grid-template-columns: 62px repeat(7, 1fr); /* antes 86px */
+  grid-template-columns: 62px repeat(7, 1fr);
   gap:6px;
 }
 .weekName{
-  display:flex;align-items:center;
+  display:flex;
+  align-items:center;
   font-weight:650;
-  font-size:11px;           /* antes 12px */
+  font-size:11px;
   color:rgba(255,255,255,.82);
-  padding:6px 6px;          /* antes 8px 6px */
+  padding:6px 6px;
   border:1px solid var(--edge);
   border-radius:12px;
   background:rgba(255,255,255,.02);
@@ -101,56 +211,59 @@ hr{border:0;border-top:1px solid var(--edge);margin:12px 0}
   border:1px solid var(--edge);
   border-radius:12px;
   text-align:center;
-  padding:8px 0;            /* antes 10px 0 */
+  padding:8px 0;
   font-weight:900;
-  font-size:15px;           /* antes 16px */
+  font-size:15px;
   background:rgba(255,255,255,.02);
   user-select:none;
 }
 .weekCell.m{border-color:rgba(170,200,255,.65); color:rgba(210,230,255,.95)}
 .weekCell.t{border-color:rgba(255,190,120,.65); color:rgba(255,230,200,.95)}
 .weekCell.v{border-color:rgba(120,220,180,.65); color:rgba(215,255,240,.95)}
+.weekCell.r{border-color:rgba(200,200,255,.55)}
 .weekCell.off{opacity:.28}
 
 @media (max-width: 820px){
-  /* En móvil ocultamos la mensual y mostramos la semanal */
   .calendar{display:none !important;}
   .weekWrap{display:block;}
 }
-/* Botonera vacaciones */
+
+/* ===== VACACIONES UI ===== */
 .btnPedir,.btnPedidos{min-width:120px}
-.pedirBar{margin-top:10px;border:1px solid var(--edge);border-radius:14px;padding:10px;background:rgba(255,255,255,.02)}
+.pedirBar{
+  margin-top:10px;
+  border:1px solid var(--edge);
+  border-radius:14px;
+  padding:10px;
+  background:rgba(255,255,255,.02)
+}
 .panelPedidos{margin-top:10px;display:flex;flex-direction:column;gap:8px}
 .pedidoItem{
-  border:1px solid var(--edge);border-radius:14px;padding:10px;background:rgba(255,255,255,.02)
+  border:1px solid var(--edge);
+  border-radius:14px;
+  padding:10px;
+  background:rgba(255,255,255,.02)
 }
 .pedidoItem .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
 .pedidoItem .dates{margin-top:6px;color:var(--muted);font-size:12px}
 .pedidoItem .actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
 
-/* selección de días para pedir (solo durante modo Pedir) */
-/* selección de días para pedir (borde amarillo grueso) */
-/* selección de días para pedir (borde amarillo grueso) */
+/* Selección de días para pedir (borde amarillo grueso) */
 .day.reqSel,
 .weekCell.reqSel{
-  outline: 4px solid rgba(255, 210, 70, .95) !important;
+  outline: 4px solid var(--pick) !important;
   outline-offset: 2px;
   box-shadow: 0 0 0 2px rgba(0,0,0,.35) inset;
 }
-#vacacionesCard{ margin-left: 10px; }      /* desktop: separa del calendario */
+
+/* Ajuste desktop de separación */
+#vacacionesCard{ margin-left: 10px; }
 @media (max-width:900px){
-  #vacacionesCard{ margin-left: 0; margin-top: 16px; } /* móvil: separa vertical */
+  #vacacionesCard{ margin-left: 0; margin-top: 16px; }
 }
-.tag.v{
-  border-color: rgba(120,220,180,.65);
-  color: rgba(215,255,240,.95);
-}
-.weekCell.v{
-  border-color: rgba(120,220,180,.65);
-  color: rgba(215,255,240,.95);
-}
-.weekCell.r{ border-color: rgba(200,200,255,.55); }
-/* ===== MODO ADMIN ===== */
+
+/* ===== MODO ADMIN (tinte distinto) =====
+   No toca tu fondo general, solo “card/edge” para que se note. */
 body.admin-mode{
   --card: rgba(90, 30, 30, .45);
   --edge: rgba(255, 120, 120, .45);
